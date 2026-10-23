@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>After Hours AI</title>
+<style>
+:root{--bg:#ffffff;--card:#f7f7f8;--ink:#0d0d0d;--muted:#6b6b6b;--line:#e3e3e3;--hi:#10a37f;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#212121;--card:#2a2a2a;--ink:#ececec;--muted:#a0a0a0;--line:#3b3b3b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:720px;margin:0 auto;padding:48px 18px}
+h1{font-size:clamp(30px,7vw,44px);margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 28px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+a.card:hover,a.card:focus-visible{border-color:var(--hi);outline:none}
+.card h2{margin:0 0 4px;font-size:20px}.card p{margin:0;color:var(--muted)}
+.go{display:inline-block;margin-top:14px;background:var(--hi);color:#fff;border-radius:999px;padding:8px 18px;font-weight:600}
+ul{color:var(--muted);padding-left:20px;margin-top:30px}
+</style>
+</head>
+<body>
+<main>
+  <h1>🎒 After Hours AI</h1>
+  <p class="sub">A study space with an AI tutor, focus timer, tasks, grades, flashcards and a group chat with your friends.</p>
+  <div class="grid">
+    <a class="card" href="after-hours-ai-us.html">
+      <h2>US version</h2>
+      <p>Group chat through Telegram.</p>
+      <span class="go">Open</span>
+    </a>
+    <a class="card" href="after-hours-ai-ir.html">
+      <h2>IR version · نسخه ایران</h2>
+      <p>Group chat through Bale (بله).</p>
+      <span class="go">Open</span>
+    </a>
+  </div>
+  <ul>
+    <li>Your API keys and bot tokens are saved only in your own browser, never on this site.</li>
+    <li>Bale users: if the chat can’t read messages, download <a href="relay.py" download>relay.py</a> and run it on your computer (<code>python relay.py</code>), then type <code>http://127.0.0.1:8787</code> in the Relay address box.</li>
+    <li>Each version saves its data separately. Use Settings, then Backup, to move your notes and tasks.</li>
+  </ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>After Hours AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e7eee9;--panel:#f6faf7;--ink:#14302a;--muted:#56706a;--line:#c4d3cb;--hi:#f2c200;--hi-ink:#2a2200;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101c18;--panel:#182823;--ink:#e8efe9;--muted:#93aaa2;--line:#2b4039;--bad:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101c18;--panel:#182823;--ink:#e8efe9;--muted:#93aaa2;--line:#2b4039;--bad:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:22px 16px 60px}
+h1,h2,.big{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif}
+h1{font-size:clamp(26px,6vw,36px);margin:0 0 12px;letter-spacing:-.02em}h2{font-size:20px;margin:0 0 10px}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
+section.pane{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;display:none}
+section.pane.on{display:block}
+button,input,select,textarea{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 15px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--ink)}button.on,button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.go{background:var(--hi);color:var(--hi-ink);border-color:var(--hi);font-weight:600}
+input,select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}
+textarea{width:100%;min-height:150px;resize:vertical}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.c{justify-content:center}
+.big{font-size:clamp(64px,20vw,112px);font-weight:800;text-align:center;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.c-t{text-align:center}
+.bar{height:10px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--hi);width:0}
+ul{list-style:none;margin:0;padding:0}li{display:flex;gap:10px;align-items:center;padding:9px 2px;border-top:1px solid var(--line)}
+li .t{flex:1;overflow-wrap:anywhere}li.done .t{text-decoration:line-through;color:var(--muted)}
+.tag{font-size:13px;border:1px solid var(--line);border-radius:6px;padding:0 7px;color:var(--muted)}
+.late{color:var(--bad);font-weight:600}.p3{border-left:4px solid var(--hi);padding-left:8px}
+.card{min-height:150px;display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:14px;padding:18px;font-size:22px;cursor:pointer}
+.today{outline:2px solid var(--hi);border-radius:10px}
+.m{white-space:pre-wrap;padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid var(--line)}.m.u{background:var(--bg)}
+.focus .big{background:var(--hi);color:var(--hi-ink);border-radius:14px}
+
+:root{--bg:#fff;--panel:#fff;--ink:#0d0d0d;--muted:#6b6b6b;--line:#e3e3e3;--side:#f7f7f8;--hi:#10a37f;--hi-ink:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#212121;--panel:#2a2a2a;--ink:#ececec;--muted:#a0a0a0;--line:#3b3b3b;--side:#171717}}
+:root[data-theme="dark"]{--bg:#212121;--panel:#2a2a2a;--ink:#ececec;--muted:#a0a0a0;--line:#3b3b3b;--side:#171717}
+#app{display:flex;min-height:100vh}
+#side{width:264px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh}
+.brand{font-weight:800;font-size:18px;padding:4px 8px}.sec{color:var(--muted);font-size:12px;padding:6px 8px 0}
+.nc{border-radius:10px;text-align:left;width:100%}#csearch{width:100%}
+#clist{flex:1;overflow:auto;min-height:60px}
+#mainc{flex:1;min-width:0;max-width:880px;margin:0 auto;width:100%;padding:0 16px 24px}
+.top{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:12px;position:sticky;top:0;z-index:5;border-radius:0 0 14px 14px;background:color-mix(in srgb,var(--panel) var(--po,90%),transparent)}
+.top select{margin-left:auto}#menu{display:none}
+nav{flex-direction:column;overflow:visible;margin:0;gap:2px}
+nav button{border:0;border-radius:8px;text-align:left;width:100%;padding:9px 12px}
+nav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+nav button.on{background:color-mix(in srgb,var(--ink) 13%,transparent);color:var(--ink)}
+.ci{display:flex;align-items:center;border-radius:8px}.ci.on{background:color-mix(in srgb,var(--ink) 13%,transparent)}
+.ci button{border:0;border-radius:8px}.ci button:first-child{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis}.ci .x{width:30px;opacity:.5;padding:6px}
+section.pane{background:color-mix(in srgb,var(--panel) var(--po,90%),transparent)}
+#p-ai{padding:0;flex-direction:column;min-height:calc(100vh - 90px)}#p-ai.on{display:flex}
+#chat{flex:1;min-height:200px;max-height:calc(100vh - 260px);overflow:auto;padding:8px 18px}
+.m{white-space:normal;display:flex;gap:12px;margin:16px 0;border:0;padding:0;border-radius:0;background:none}.m.u{justify-content:flex-end;background:none}
+.bub{max-width:100%;overflow-wrap:anywhere;line-height:1.65;white-space:pre-wrap}
+.m.u .bub{max-width:85%;background:color-mix(in srgb,var(--ink) 10%,transparent);padding:10px 16px;border-radius:20px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--hi);color:var(--hi-ink);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.bub pre{background:#0d0d0d;color:#eee;padding:12px;border-radius:10px;overflow:auto;white-space:pre-wrap}
+.bub code{background:color-mix(in srgb,var(--ink) 12%,transparent);padding:1px 5px;border-radius:5px}.bub h3,.bub h4{margin:6px 0}
+.acts button{border:0;padding:2px 8px;font-size:13px;color:var(--muted)}
+.composer{padding:8px 18px 16px}#aiq button{font-size:13px;padding:6px 12px}
+.box{display:flex;align-items:flex-end;gap:6px;border:1px solid var(--line);border-radius:26px;padding:8px 8px 8px 18px;background:color-mix(in srgb,var(--ink) 6%,var(--panel))}
+.box textarea{flex:1;border:0;background:transparent;min-height:0;height:24px;max-height:160px;resize:none;padding:6px 0;outline:none}
+.box button{border-radius:50%;width:36px;height:36px;padding:0;border:0}.box #aisend{background:var(--ink);color:var(--bg)}
+.empty{text-align:center;margin:10vh 0 0}.empty h2{font-size:28px}
+.btnlike{border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer}
+@media(max-width:800px){#side{position:fixed;left:0;top:0;z-index:20;transform:translateX(-100%);transition:transform .2s}#side.open{transform:none}#menu{display:inline-block}}
+</style>
+</head>
+<body>
+<div id="app"><aside id="side"><div class="brand">🎒 After Hours</div><button id="newchat" class="nc">＋ New chat</button><input id="csearch" placeholder="Search chats" aria-label="Search chats"><div id="clist"></div><div class="sec">Tools</div><nav id="nav"></nav><div id="mini" class="muted"></div></aside>
+<div id="mainc"><div class="top"><button id="menu" aria-label="Menu">☰</button><b id="topt"></b><select id="persona" aria-label="Tutor mode"></select><button id="exp">Export</button></div>
+
+<section class="pane" id="p-timer">
+  <div class="big" id="time" role="timer">25:00</div>
+  <p class="c-t muted" id="mode">Focus</p>
+  <div class="row c" id="presets"></div>
+  <div class="row c">
+    <label>Focus <input id="cf" type="number" min="1" max="180" value="25" style="width:70px"></label>
+    <label>Break <input id="cb" type="number" min="1" max="60" value="5" style="width:70px"></label>
+  </div>
+  <div class="row c"><button class="go" id="start">Start</button><button id="reset">Reset</button><button id="skip">Skip</button></div>
+  <div class="row c">
+    <label><input type="checkbox" id="sound"> Sound</label>
+    <label><input type="checkbox" id="auto"> Auto-start next</label>
+    <label>Daily goal (min) <input id="goal" type="number" min="10" step="10" style="width:80px"></label>
+  </div>
+  <div class="bar"><i id="gbar"></i></div>
+  <p class="c-t muted" id="stats"></p>
+  <p class="c-t muted">Every 4th break is a long one (15 min). Space bar starts or pauses.</p>
+</section>
+
+<section class="pane" id="p-tasks">
+  <h2>Tasks</h2>
+  <div class="row"><input id="tt" placeholder="Task" maxlength="100" style="flex:1 1 180px"><input id="ts" placeholder="Subject" maxlength="20" style="width:110px">
+  <input id="td" type="date" aria-label="Due date"><select id="tp" aria-label="Priority"><option value="1">Low</option><option value="2" selected>Medium</option><option value="3">High</option></select><button class="go" id="ta">Add</button></div>
+  <div class="row"><select id="tf" aria-label="Filter subject"></select><select id="so" aria-label="Sort"><option value="added">Newest</option><option value="due">Due date</option><option value="pri">Priority</option></select><button id="tc">Clear finished</button></div>
+  <div class="bar"><i id="tbar"></i></div><p class="muted" id="tcount"></p>
+  <ul id="tl"></ul>
+</section>
+
+<section class="pane" id="p-grades">
+  <h2>Grade calculator</h2>
+  <div class="row"><input id="gn" placeholder="Assignment" style="flex:1 1 140px"><input id="gs" type="number" placeholder="Score %" style="width:90px"><input id="gw" type="number" placeholder="Weight %" style="width:100px"><button class="go" id="ga">Add</button></div>
+  <ul id="gl"></ul>
+  <p><b id="gres">No grades yet</b></p>
+  <h2>What do I need on the final?</h2>
+  <div class="row"><label>Target % <input id="tg" type="number" value="90" style="width:80px"></label><label>Final worth % <input id="fw" type="number" value="20" style="width:80px"></label></div>
+  <p id="need" class="muted"></p>
+  <h2>GPA</h2>
+  <div class="row"><input id="gcn" placeholder="Class" style="flex:1 1 120px"><select id="gg" aria-label="Grade"><option value="4">A</option><option value="3.7">A-</option><option value="3.3">B+</option><option value="3">B</option><option value="2.7">B-</option><option value="2.3">C+</option><option value="2">C</option><option value="1.7">C-</option><option value="1">D</option><option value="0">F</option></select><input id="gc" type="number" value="1" step="0.5" style="width:80px" aria-label="Credits"><button class="go" id="gadd">Add class</button></div>
+  <ul id="gpl"></ul><p><b id="gpa">GPA: add a class</b></p>
+</section>
+
+<section class="pane" id="p-cards">
+  <h2>Flashcards</h2>
+  <div class="row"><input id="cfq" placeholder="Front (question)" style="flex:1 1 160px"><input id="cba" placeholder="Back (answer)" style="flex:1 1 160px"><button class="go" id="cadd">Add</button></div>
+  <div class="card" id="card" tabindex="0" role="button" aria-label="Flip card"></div>
+  <div class="row c"><button id="cp">Prev</button><button id="cn">Next</button><button id="csh">Shuffle</button><button id="cd">Delete card</button></div>
+  <p class="c-t muted" id="cc"></p>
+</section>
+
+<section class="pane" id="p-ai"><div id="chat" aria-live="polite"></div><div class="composer"><div class="row" id="aiq"></div><div class="box"><textarea id="ai" rows="1" placeholder="Message After Hours AI" aria-label="Message"></textarea><button id="mic" type="button" aria-label="Voice input">🎤</button><button id="aisend" aria-label="Send">↑</button></div><div class="muted" id="aimsg"></div></div></section>
+
+<section class="pane" id="p-bale"><h2>Bale chat</h2>
+  <div id="bsetup"><p class="muted">Show a Bale group with your friends here. In Bale, make a bot with @botfather, add it to your group, then paste the bot’s token below. The token stays in this browser.</p>
+  <div class="row"><input id="btok" type="password" placeholder="Bot token" autocomplete="off" style="flex:1 1 220px"><input id="bname" placeholder="Your name" style="width:130px"></div>
+  <div class="row"><input id="bchat" placeholder="Chat ID" style="width:170px"><button id="bfind">Find chats</button><button class="go" id="bsave">Connect</button></div>
+  <div class="row"><input id="brelay" placeholder="Relay address (only if reading is blocked), e.g. http://127.0.0.1:8787" style="flex:1 1 280px"></div>
+  <div class="row" id="bchats"></div><p class="muted" id="bst"></p></div>
+  <div id="blog" style="max-height:50vh;overflow:auto"></div>
+  <div class="box" style="margin-top:10px"><textarea id="bin" rows="1" placeholder="Message your group" aria-label="Message your group"></textarea><button id="bsend" aria-label="Send" style="background:var(--ink);color:var(--bg)">↑</button></div>
+</section>
+
+<section class="pane" id="p-notes">
+  <h2>Scratch notes</h2>
+  <textarea id="notes" placeholder="Formulas, reminders, things to ask the teacher…"></textarea>
+  <p class="muted" id="wc"></p>
+</section>
+
+<section class="pane" id="p-sched">
+  <h2>Week plan</h2><div id="days"></div>
+  <h2 style="margin-top:18px">Exam countdown</h2>
+  <div class="row"><input id="en" placeholder="Exam" style="flex:1 1 140px"><input id="ed" type="date" aria-label="Exam date"><button class="go" id="eadd">Add</button></div><ul id="el"></ul>
+</section>
+
+<section class="pane" id="p-set">
+  <h2>Settings</h2>
+  <div class="row"><button id="th">Switch light/dark</button><button id="rs">Reset today’s stats</button></div>
+  <h2>Appearance</h2>
+  <p class="muted">Background</p><div class="row" id="bgs"></div>
+  <div class="row"><label>Custom color <input type="color" id="bgc" value="#1e1e2e"></label><label>Accent <input type="color" id="acc" value="#10a37f"></label><label class="btnlike">Upload image <input type="file" id="bgf" accept="image/*" hidden></label><button id="bgr">Reset look</button></div>
+  <div class="row"><label>Text size <input type="range" id="fs" min="14" max="22" value="16"></label><label>Panel opacity <input type="range" id="po" min="60" max="100" value="90"></label></div>
+  <h2>AI connection</h2>
+  <p class="muted">Choose where the AI tutor gets its answers. Your key stays in this browser only, so don’t share this file or your screen after typing it in.</p>
+  <div class="row"><select id="aip" aria-label="Provider"><option value="">Built-in Claude (published page only)</option><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option></select><input id="aik" type="password" placeholder="API key" autocomplete="off" style="flex:1 1 180px"><input id="aim" placeholder="Model (optional)" style="flex:1 1 180px"></div>
+  <div class="row"><button class="go" id="aisave">Save</button><button id="aitest">Test</button><button id="aiforget">Remove key</button></div><p class="muted" id="aist"></p>
+  <h2>Backup</h2>
+  <p class="muted">Copy this text to back up everything. Paste a backup below and press Restore to load it.</p>
+  <textarea id="bk"></textarea>
+  <div class="row"><button id="ex">Refresh backup text</button><button class="go" id="im">Restore</button></div>
+  <p class="muted" id="bm"></p>
+</section>
+</div></div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},D=["Mon","Tue","Wed","Thu","Fri"];
+var today=new Date().toISOString().slice(0,10);
+var S={tasks:[],grades:[],cards:[],notes:"",sched:{},sessions:0,mins:0,streak:0,last:"",chats:[],cur:"",persona:"Tutor",look:{},gpa:[],exams:[],day:today,goal:120,sound:true,auto:false,theme:""};
+try{var o=JSON.parse(localStorage.getItem("ahpro")||"null");if(o){for(var k in o)S[k]=o[k];if(o.day!==today){S.sessions=0;S.mins=0;S.day=today}}}catch(e){}
+function save(){try{localStorage.setItem("ahpro",JSON.stringify(S))}catch(e){}}
+function mk(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+
+/* tabs */
+var T=[["ai","AI chat"],["bale","Bale chat"],["timer","Focus timer"],["tasks","Tasks"],["grades","Grades"],["cards","Flashcards"],["notes","Notes"],["sched","Week & exams"],["set","Settings"]];
+T.forEach(function(t){var b=mk("button","",t[1]);b.onclick=function(){show(t[0])};b.id="n-"+t[0];$("nav").appendChild(b)});
+function show(id){if(id==="bale"){bu=0;$("n-bale").textContent="Bale chat";brender()}$("persona").style.display=$("exp").style.display=id==="ai"?"":"none";$("topt").textContent=$("n-"+id).textContent;$("side").classList.remove("open");T.forEach(function(t){$("p-"+t[0]).classList.toggle("on",t[0]===id);$("n-"+t[0]).classList.toggle("on",t[0]===id)});try{location.hash=id}catch(e){}if(id==="set")exportBk()}
+
+/* theme */
+function theme(){if(S.theme)document.documentElement.setAttribute("data-theme",S.theme)}theme();
+$("th").onclick=function(){var dark=S.theme?S.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;S.theme=dark?"light":"dark";theme();save()};
+
+/* timer */
+var F=25,B=5,brk=false,left=1500,tm=0,end=0,done=0;
+[[25,5],[45,10],[50,10],[15,3]].forEach(function(p){var b=mk("button","",p[0]+" / "+p[1]);b.onclick=function(){F=p[0];B=p[1];$("cf").value=F;$("cb").value=B;rst()};$("presets").appendChild(b)});
+function f2(s){var m=Math.floor(s/60),r=s%60;return(m<10?"0":"")+m+":"+(r<10?"0":"")+r}
+function bump(){var y=new Date(Date.now()-864e5).toISOString().slice(0,10);if(S.last!==today){S.streak=(S.last===y?(S.streak||0):0)+1;S.last=today}}
+function tp(){$("time").textContent=f2(left);$("mode").textContent=brk?(done%4===0?"Long break":"Break: stretch, water"):"Focus";$("start").textContent=tm?"Pause":"Start";
+ $("p-timer").classList.toggle("focus",!!tm&&!brk);document.title=(tm?f2(left)+" · ":"")+"After Hours AI";var mi=$("mini");if(mi)mi.textContent=tm?"⏱ "+f2(left)+(brk?" break":" focus"):"";
+ $("gbar").style.width=Math.min(100,S.mins/S.goal*100)+"%";$("stats").textContent=S.sessions+" sessions · "+S.mins+" of "+S.goal+" min today · "+(S.last===today?S.streak:0)+"-day streak"}
+function beep(){if(!S.sound)return;try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=660;o.connect(c.destination);o.start();setTimeout(function(){o.stop();c.close()},400)}catch(e){}}
+function len(){return brk?(done%4===0?15:B)*60:F*60}
+function tick(){left=Math.max(0,Math.round((end-Date.now())/1000));if(!left){beep();if(!brk){bump();S.sessions++;S.mins+=F;done++;save()}brk=!brk;left=len();end=Date.now()+left*1000;if(!S.auto){clearInterval(tm);tm=0}}tp()}
+function stop(){clearInterval(tm);tm=0}
+function rst(){stop();brk=false;left=F*60;tp()}
+$("start").onclick=function(){if(tm)stop();else{end=Date.now()+left*1000;tm=setInterval(tick,250)}tp()};
+$("reset").onclick=rst;
+$("skip").onclick=function(){if(!brk){bump();S.sessions++;S.mins+=Math.max(0,Math.round((F*60-left)/60));done++;save()}brk=!brk;left=len();if(tm)end=Date.now()+left*1000;tp()};
+$("cf").onchange=function(){F=Math.max(1,+this.value||25);rst()};$("cb").onchange=function(){B=Math.max(1,+this.value||5)};
+$("sound").checked=S.sound;$("auto").checked=S.auto;$("goal").value=S.goal;
+$("sound").onchange=function(){S.sound=this.checked;save()};$("auto").onchange=function(){S.auto=this.checked;save()};
+$("goal").onchange=function(){S.goal=Math.max(10,+this.value||120);save();tp()};
+$("rs").onclick=function(){S.sessions=0;S.mins=0;save();tp()};
+document.addEventListener("keydown",function(e){if(e.code==="Space"&&/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName)===false&&$("p-timer").classList.contains("on")){e.preventDefault();$("start").click()}});
+
+/* tasks */
+function trender(){var subs={};S.tasks.forEach(function(t){if(t.s)subs[t.s]=1});var cur=$("tf").value||"";
+ var tf=$("tf");tf.innerHTML="";var a=mk("option","","All subjects");a.value="";tf.appendChild(a);Object.keys(subs).forEach(function(s){var o=mk("option","",s);o.value=s;tf.appendChild(o)});tf.value=subs[cur]?cur:"";
+ var L=S.tasks.map(function(t,i){return{t:t,i:i}}).filter(function(x){return!tf.value||x.t.s===tf.value});
+ var so=$("so").value;if(so==="due")L.sort(function(a,b){return(a.t.d||"9")>(b.t.d||"9")?1:-1});else if(so==="pri")L.sort(function(a,b){return b.t.p-a.t.p});else L.reverse();
+ var ul=$("tl");ul.innerHTML="";
+ L.forEach(function(x){var t=x.t,li=mk("li",(t.done?"done ":"")+(t.p==3?"p3":""));var cb=mk("input");cb.type="checkbox";cb.checked=t.done;cb.setAttribute("aria-label","Done: "+t.x);cb.onchange=function(){t.done=cb.checked;save();trender()};
+  li.appendChild(cb);li.appendChild(mk("span","t",t.x));if(t.s)li.appendChild(mk("span","tag",t.s));
+  if(t.d){var d=mk("span","tag"+(!t.done&&t.d<today?" late":""),(t.d<today&&!t.done?"Overdue ":"Due ")+t.d.slice(5));li.appendChild(d)}
+  var del=mk("button","","Delete");del.onclick=function(){S.tasks.splice(x.i,1);save();trender()};li.appendChild(del);ul.appendChild(li)});
+ var n=S.tasks.filter(function(t){return t.done}).length;$("tbar").style.width=(S.tasks.length?n/S.tasks.length*100:0)+"%";$("tcount").textContent=n+" of "+S.tasks.length+" finished"}
+function tadd(){var v=$("tt").value.trim();if(!v)return;S.tasks.push({x:v,s:$("ts").value.trim(),d:$("td").value,p:+$("tp").value,done:false});$("tt").value="";save();trender()}
+$("ta").onclick=tadd;$("tt").onkeydown=function(e){if(e.key==="Enter")tadd()};$("tf").onchange=trender;$("so").onchange=trender;
+$("tc").onclick=function(){S.tasks=S.tasks.filter(function(t){return!t.done});save();trender()};
+
+/* grades */
+function avg(){var w=0,s=0;S.grades.forEach(function(g){w+=g.w;s+=g.s*g.w});return w?{a:s/w,w:w}:null}
+function letter(p){return p>=93?"A":p>=90?"A-":p>=87?"B+":p>=83?"B":p>=80?"B-":p>=77?"C+":p>=73?"C":p>=70?"C-":p>=60?"D":"F"}
+function grender(){var ul=$("gl");ul.innerHTML="";S.grades.forEach(function(g,i){var li=mk("li");li.appendChild(mk("span","t",g.n));li.appendChild(mk("span","tag",g.s+"% × "+g.w+"%"));var d=mk("button","","Delete");d.onclick=function(){S.grades.splice(i,1);save();grender()};li.appendChild(d);ul.appendChild(li)});
+ var r=avg();$("gres").textContent=r?"Current: "+r.a.toFixed(1)+"% ("+letter(r.a)+") on "+r.w+"% of the grade":"No grades yet";
+ var fw=+$("fw").value||0,tg=+$("tg").value||0;
+ if(r&&fw>0&&fw<100){var cw=100-fw,cur=r.w>=cw?r.a:r.a;var need=(tg-cur*cw/100)/(fw/100);$("need").textContent="You need about "+need.toFixed(1)+"% on the final to finish at "+tg+"%."+(need>100?" That’s over 100, so ask about extra credit.":need<0?" You already have it locked in.":"")}else $("need").textContent="Add grades, then set the final’s weight."}
+$("ga").onclick=function(){var n=$("gn").value.trim(),s=parseFloat($("gs").value),w=parseFloat($("gw").value);if(!n||isNaN(s)||isNaN(w)||w<=0)return;S.grades.push({n:n,s:s,w:w});$("gn").value=$("gs").value=$("gw").value="";save();grender()};
+$("tg").oninput=$("fw").oninput=grender;
+
+/* cards */
+var ci=0,flip=false;
+function crender(){var c=S.cards[ci];$("card").textContent=c?(flip?c.b:c.f):"No cards yet. Add one above.";$("cc").textContent=S.cards.length?(ci+1)+" of "+S.cards.length+(c?" · "+(flip?"answer":"question"):""):""}
+$("card").onclick=function(){if(S.cards.length){flip=!flip;crender()}};$("card").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();this.click()}};
+$("cadd").onclick=function(){var f=$("cfq").value.trim(),b=$("cba").value.trim();if(!f||!b)return;S.cards.push({f:f,b:b});$("cfq").value=$("cba").value="";ci=S.cards.length-1;flip=false;save();crender()};
+$("cn").onclick=function(){if(S.cards.length){ci=(ci+1)%S.cards.length;flip=false;crender()}};
+$("cp").onclick=function(){if(S.cards.length){ci=(ci-1+S.cards.length)%S.cards.length;flip=false;crender()}};
+$("csh").onclick=function(){for(var i=S.cards.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=S.cards[i];S.cards[i]=S.cards[j];S.cards[j]=t}ci=0;flip=false;save();crender()};
+$("cd").onclick=function(){if(S.cards.length){S.cards.splice(ci,1);ci=Math.max(0,ci-1);flip=false;save();crender()}};
+
+/* AI tutor */
+var AIP="You are a friendly, concise study tutor for a school student. Explain step by step in plain language, check understanding with a short question, and teach rather than just handing over answers to graded work.",hist=[],busy=false,NOAI="Add an API key in Settings to use the AI tutor.";
+var DEF={gemini:"gemini-flash-latest",groq:"llama-3.3-70b-versatile",openrouter:"meta-llama/llama-3.3-70b-instruct:free"};
+function smp(){return typeof claude!=="undefined"&&claude.use?claude.use("sample").catch(function(){return null}):Promise.resolve(null)}
+function cfg(){return S.ai||(S.ai={p:"",k:"",m:""})}
+function llm(msgs,onText){
+ var c=cfg();
+ if(c.p&&c.k){
+  var m=c.m||DEF[c.p],u,h={"Content-Type":"application/json"},b;
+  if(c.p==="gemini"){u="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(m)+":generateContent";h["x-goog-api-key"]=c.k;b={contents:msgs.map(function(x){return{role:x.role==="user"?"user":"model",parts:[{text:x.content}]}})}}
+  else{u=c.p==="groq"?"https://api.groq.com/openai/v1/chat/completions":"https://openrouter.ai/api/v1/chat/completions";h.Authorization="Bearer "+c.k;b={model:m,messages:msgs}}
+  return fetch(u,{method:"POST",headers:h,body:JSON.stringify(b)}).then(function(r){return r.json().then(function(j){if(!r.ok)throw{code:r.status,message:(j.error&&j.error.message)||""};return j})}).then(function(j){
+   var t=c.p==="gemini"?((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(function(x){return x.text||""}).join(""):(((j.choices||[])[0]||{}).message||{}).content;
+   if(!t)throw{message:"The AI sent an empty reply."};return t})}
+ return smp().then(function(sm){if(!sm)throw{code:"none"};return sm(msgs,{onText:function(r){if(onText)onText(r.text)},cache:false}).then(function(r){return r.text})})}
+function aerr(e){var c=e&&e.code;return c==="none"?NOAI:(c===400||c===401||c===403)?"The provider rejected the request. Check your key, provider and model in Settings."+(e.message?" ("+e.message.slice(0,120)+")":""):(c===429||c==="rate_limited")?"Rate limit hit. Wait a minute and try again.":c==="not_granted"?"AI access was declined. Reload the page and allow it.":e instanceof TypeError?"Couldn’t reach the AI. Check your internet and that the provider matches your key.":"Something went wrong"+(e&&e.message?": "+e.message.slice(0,120):".")}
+var PER={Tutor:AIP,Math:"You are a patient math tutor. Show steps, check each one, and write equations in plain text.",Science:"You are a science tutor. Explain the why with simple analogies and check understanding.",Writing:"You are a writing coach. Give specific feedback on clarity, structure and grammar, but do not write the whole assignment.",Coding:"You are a friendly coding teacher. Explain concepts, show short examples, and have the student try the next step.",Languages:"You are a language tutor. Use simple phrases, give translations, and gently correct mistakes.",ELI10:"Explain everything as if to a 10-year-old, with short sentences and fun analogies."};
+Object.keys(PER).forEach(function(k){var o=mk("option","",k);o.value=k;$("persona").appendChild(o)});$("persona").value=S.persona;$("persona").onchange=function(){S.persona=this.value;save()};
+function md(t){var e=t.replace(/&/g,"&amp;").replace(/</g,"&lt;");return e.replace(/```(?:\w*\n)?([\s\S]*?)```/g,"<pre>$1</pre>").replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>").replace(/^#{3,} ?(.*)$/gm,"<h4>$1</h4>").replace(/^#{1,2} ?(.*)$/gm,"<h3>$1</h3>").replace(/^[-*] /gm,"• ")}
+function cur(){var c=S.chats.filter(function(x){return x.id===S.cur})[0];if(!c){c={id:""+Date.now(),t:"New chat",m:[]};S.chats.unshift(c);S.cur=c.id}return c}
+function addm(m,idx){var d=mk("div","m "+(m.role==="user"?"u":"a")),b=mk("div","bub");
+ if(m.role==="user"){b.textContent=m.label||m.content;d.appendChild(b)}else{b.innerHTML=md(m.content);d.appendChild(mk("div","av","AI"));var w=mk("div");w.style.minWidth="0";w.appendChild(b);
+  if(m.content&&idx>=0){var a=mk("div","acts"),cp=mk("button","","Copy"),ls=mk("button","","Listen");cp.onclick=function(){try{navigator.clipboard.writeText(m.content);cp.textContent="Copied"}catch(e){}};ls.onclick=function(){try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(m.content))}catch(e){}};a.appendChild(cp);a.appendChild(ls);
+   if(idx===cur().m.length-1){var g=mk("button","","Regenerate");g.onclick=regen;a.appendChild(g)}w.appendChild(a)}d.appendChild(w)}
+ $("chat").appendChild(d);return b}
+function rlist(){var q=($("csearch").value||"").toLowerCase(),l=$("clist");l.innerHTML="";S.chats.filter(function(c){return c.m.length&&(!q||c.t.toLowerCase().indexOf(q)>-1)}).forEach(function(c){var r=mk("div","ci"+(c.id===S.cur?" on":"")),t=mk("button","",c.t),x=mk("button","x","×");t.onclick=function(){S.cur=c.id;save();show("ai");rchat()};x.setAttribute("aria-label","Delete chat");x.onclick=function(){S.chats=S.chats.filter(function(z){return z!==c});if(S.cur===c.id)S.cur="";save();rchat()};r.appendChild(t);r.appendChild(x);l.appendChild(r)})}
+function rchat(){var c=cur();$("chat").innerHTML="";if(!c.m.length){var e=mk("div","empty");e.appendChild(mk("h2","","What are you studying tonight?"));e.appendChild(mk("p","muted","Ask anything, or pick a shortcut below."));$("chat").appendChild(e)}c.m.forEach(addm);$("chat").scrollTop=1e9;rlist()}
+function ask(text,label){
+ if(busy||!text.trim())return;
+ var c=cur();busy=true;c.m.push({role:"user",content:text,label:label});if(c.t==="New chat")c.t=(label||text).slice(0,36);
+ rchat();var out=addm({role:"assistant",content:""},-1);out.textContent="Thinking…";
+ var st=c.m.length>11?c.m.length-11:0,msgs=c.m.slice(st).map(function(m){return{role:m.role,content:m.content}});
+ msgs[0].content=(PER[S.persona]||AIP)+"\n\n"+msgs[0].content;
+ llm(msgs,function(t){out.innerHTML=md(t);$("chat").scrollTop=1e9}).then(function(t){c.m.push({role:"assistant",content:t})}).catch(function(e){c.m.push({role:"assistant",content:aerr(e)})}).then(function(){busy=false;save();rchat()})}
+function regen(){var c=cur();if(busy||c.m.length<2)return;c.m.pop();var u=c.m.pop();ask(u.content,u.label)}
+function need(){var v=$("ai").value.trim();if(!v)$("aimsg").textContent="Type a topic first, then press the shortcut.";return v}
+function send(){var v=$("ai").value.trim();if(!v)return;$("ai").value="";$("ai").style.height="24px";ask(v)}
+function mkcards(){var src=$("ai").value.trim()||S.notes.trim();if(!src){$("aimsg").textContent="Type a topic or write some notes first.";return}
+ $("aimsg").textContent="Making flashcards…";
+ llm([{role:"user",content:"Make 8 study flashcards from the text below. Reply with only a JSON array of objects like {\"f\":\"question\",\"b\":\"short answer\"}.\n\n"+src.slice(0,4000)}]).then(function(t){var a=JSON.parse(t.slice(t.indexOf("["),t.lastIndexOf("]")+1)),n=0;a.forEach(function(c){if(c&&c.f&&c.b){S.cards.push({f:String(c.f),b:String(c.b)});n++}});save();ci=Math.max(0,S.cards.length-n);flip=false;crender();$("aimsg").textContent="Added "+n+" cards. Check the Cards tab."}).catch(function(e){$("aimsg").textContent=e instanceof SyntaxError?"The AI’s reply wasn’t usable. Try again.":aerr(e)})}
+[["Explain simply",function(){var v=need();if(v){$("ai").value="";ask("Explain this simply with one everyday example, then ask me one check question: "+v,"Explain simply: "+v)}}],
+ ["Quiz me",function(){var v=need();if(v){$("ai").value="";ask("Quiz me on: "+v+". Ask 5 questions, one at a time. Ask the first now and wait for my answer.","Quiz me on: "+v)}}],
+ ["Plan my night",function(){var t=S.tasks.filter(function(x){return!x.done}).map(function(x){return x.x+(x.s?" ("+x.s+")":"")+(x.d?" due "+x.d:"")+", priority "+x.p});if(!t.length){$("aimsg").textContent="Add some tasks first.";return}ask("Today is "+today+". Make a realistic study plan for tonight using 25-minute focus blocks with breaks. My tasks: "+t.join("; "),"Plan my night from my tasks")}],
+ ["Summarize notes",function(){if(!S.notes.trim()){$("aimsg").textContent="Your notes are empty.";return}ask("Summarize these notes into key points and list anything that looks wrong or missing:\n\n"+S.notes.slice(0,4000),"Summarize my notes")}],
+ ["Make flashcards",mkcards]].forEach(function(q){var b=mk("button","",q[0]);b.onclick=q[1];$("aiq").appendChild(b)});
+$("aisend").onclick=send;$("ai").onkeydown=function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("ai").oninput=function(){this.style.height="24px";this.style.height=Math.min(160,this.scrollHeight)+"px"};
+$("newchat").onclick=function(){S.cur="";save();show("ai");rchat();$("ai").focus()};$("csearch").oninput=rlist;$("menu").onclick=function(){$("side").classList.toggle("open")};
+$("exp").onclick=function(){var c=cur(),t=c.m.map(function(m){return(m.role==="user"?"You: ":"AI: ")+(m.label||m.content)}).join("\n\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/plain"}));a.download=(c.t||"chat")+".txt";a.click()};
+$("mic").onclick=function(){var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){$("aimsg").textContent="Voice input isn’t supported in this browser.";return}var q=new R();q.onresult=function(e){$("ai").value+=e.results[0][0].transcript;$("ai").oninput()};q.start()};
+document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="k"){e.preventDefault();$("newchat").click()}});
+function look(){var L=S.look||(S.look={}),d=document.documentElement.style,b=document.body.style;b.background=L.bg||"";b.backgroundSize="cover";b.backgroundAttachment="fixed";b.fontSize=(L.fs||16)+"px";d.setProperty("--po",(L.po||90)+"%");
+ if(L.ac){var n=parseInt(L.ac.slice(1),16);d.setProperty("--hi",L.ac);d.setProperty("--hi-ink",.299*(n>>16)+.587*(n>>8&255)+.114*(n&255)>150?"#111":"#fff")}else{d.removeProperty("--hi");d.removeProperty("--hi-ink")}}
+[["Default",""],["Midnight","#0b1020"],["Forest","linear-gradient(135deg,#0f2027,#2c5364)"],["Sunset","linear-gradient(135deg,#ff9966,#ff5e62)"],["Ocean","linear-gradient(135deg,#2193b0,#6dd5ed)"],["Grape","linear-gradient(135deg,#41295a,#2f0743)"],["Paper","#f4efe6"],["Mint","linear-gradient(135deg,#d4fc79,#96e6a1)"]].forEach(function(g){var b=mk("button");b.style.cssText="width:44px;height:44px;border-radius:10px;padding:0;background:"+(g[1]||"var(--bg)");b.title=g[0];b.setAttribute("aria-label","Background: "+g[0]);b.onclick=function(){S.look.bg=g[1];save();look()};$("bgs").appendChild(b)});
+$("bgc").oninput=function(){S.look.bg=this.value;save();look()};$("acc").oninput=function(){S.look.ac=this.value;save();look()};
+$("bgf").onchange=function(){var f=this.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);S.look.bg="url("+c.toDataURL("image/jpeg",.8)+") center/cover no-repeat";save();look()};im.src=fr.result};fr.readAsDataURL(f)};
+$("bgr").onclick=function(){S.look={};save();look()};$("fs").oninput=function(){S.look.fs=+this.value;save();look()};$("po").oninput=function(){S.look.po=+this.value;save();look()};
+if(!cfg().k)smp().then(function(x){if(!x)$("aimsg").textContent=NOAI});
+$("aip").value=cfg().p||"";$("aik").value=cfg().k||"";$("aim").value=cfg().m||"";
+function ph(){$("aim").placeholder=DEF[$("aip").value]?"Model (default: "+DEF[$("aip").value]+")":"Model (optional)"}ph();$("aip").onchange=ph;
+$("aisave").onclick=function(){var c=cfg();c.p=$("aip").value;c.k=$("aik").value.trim();c.m=$("aim").value.trim();save();$("aist").textContent=c.p&&c.k?"Saved. Press Test to check it.":"Saved. Pick a provider and paste a key to use your own."};
+$("aitest").onclick=function(){$("aist").textContent="Testing…";llm([{role:"user",content:"Reply with just: it works"}]).then(function(t){$("aist").textContent="Worked. Reply: "+t.slice(0,60)}).catch(function(e){$("aist").textContent=aerr(e)})};
+$("aiforget").onclick=function(){var c=cfg();c.k="";$("aik").value="";save();$("aist").textContent="Key removed from this browser."};
+
+/* Bale chat */
+var BB=S.bale||(S.bale={tok:"",chat:"",me:"",off:0,msgs:[]}),bu=0,bbusy=0,BERR="The browser couldn’t reach Bale. You may be offline, or Bale may not allow web pages to call it directly.";
+function BBASE(){return(BB.relay||"https://tapi.bale.ai").replace(/\/$/,"")}
+function bapi(m,q,post){var u=BBASE()+"/bot"+BB.tok+"/"+m;
+ if(post)return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(q)}).then(function(r){return r.json()});
+ return fetch(u+"?"+new URLSearchParams(q)).then(function(r){return r.json()})}
+function brender(nw){var l=$("blog");l.innerHTML="";
+ BB.msgs.forEach(function(m){var d=mk("div","m "+(m.me?"u":"a")),b=mk("div","bub",m.t);
+  if(m.me){d.appendChild(b)}else{d.appendChild(mk("div","av",(m.n||"?").slice(0,1).toUpperCase()));var w=mk("div"),nm=mk("div","muted",m.n+" · "+new Date(m.ts).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));nm.style.fontSize="12px";w.appendChild(nm);w.appendChild(b);d.appendChild(w)}
+  l.appendChild(d)});
+ l.scrollTop=1e9;
+ if(nw&&!$("p-bale").classList.contains("on")){bu++;$("n-bale").textContent="Bale chat ("+bu+")"}}
+function bpoll(){if(!BB.tok||!BB.chat||bbusy)return;bbusy=1;
+ bapi("getUpdates",{offset:BB.off,timeout:0}).then(function(j){if(!j.ok)throw{message:j.description||"Bale refused the request."};
+  var got=0;j.result.forEach(function(u){BB.off=u.update_id+1;var m=u.message;if(m&&String(m.chat.id)===String(BB.chat)){got++;BB.msgs.push({n:(m.from&&(m.from.first_name||m.from.username))||"Someone",t:m.text||m.caption||"["+(m.photo?"photo":m.voice?"voice message":m.document?"file":"attachment")+"]",ts:(m.date||Date.now()/1000)*1000})}});
+  if(j.result.length){BB.msgs=BB.msgs.slice(-200);save()}if(got)brender(true);$("bst").textContent=""})
+ .catch(function(e){$("bst").textContent=e instanceof TypeError?BERR:(e.message||"Bale error")}).then(function(){bbusy=0})}
+function bsend(){var v=$("bin").value.trim();if(!v||!BB.tok||!BB.chat)return;var txt=(BB.me?BB.me+": ":"")+v;$("bin").value="";
+ function ok(t){BB.msgs.push({n:"You",t:t,ts:Date.now(),me:true});save();brender()}
+ bapi("sendMessage",{chat_id:isNaN(+BB.chat)?BB.chat:+BB.chat,text:txt},true).then(function(j){if(!j.ok)throw{message:j.description||"Bale refused the message."};ok(v)})
+ .catch(function(e){if(e instanceof TypeError){fetch(BBASE()+"/bot"+BB.tok+"/sendMessage?"+new URLSearchParams({chat_id:BB.chat,text:txt}),{mode:"no-cors"}).then(function(){ok(v+" (sent, unconfirmed)")}).catch(function(){$("bst").textContent=BERR})}else $("bst").textContent=e.message||"Bale error"})}
+$("btok").value=BB.tok;$("brelay").value=BB.relay||"";$("bchat").value=BB.chat;$("bname").value=BB.me;
+$("bfind").onclick=function(){BB.tok=$("btok").value.trim();BB.relay=$("brelay").value.trim();if(!BB.tok){$("bst").textContent="Paste the bot token first.";return}$("bst").textContent="Looking…";
+ bapi("getUpdates",{offset:0,timeout:0}).then(function(j){if(!j.ok)throw{message:j.description||"Bale refused the request."};var seen={},box=$("bchats");box.innerHTML="";
+  j.result.forEach(function(u){var c=u.message&&u.message.chat;if(c&&!seen[c.id]){seen[c.id]=1;var b=mk("button","",(c.title||c.first_name||c.username||"chat")+" ("+c.id+")");b.onclick=function(){$("bchat").value=c.id};box.appendChild(b)}});
+  $("bst").textContent=box.children.length?"Pick the group you want, then press Connect.":"No chats yet. Add the bot to the group, send a message there, then try again."})
+ .catch(function(e){$("bst").textContent=e instanceof TypeError?BERR:(e.message||"Bale error")})};
+$("bsave").onclick=function(){BB.tok=$("btok").value.trim();BB.chat=$("bchat").value.trim();BB.me=$("bname").value.trim();BB.relay=$("brelay").value.trim();save();$("bst").textContent=BB.tok&&BB.chat?"Connected. New messages show up within a few seconds.":"Add the token and chat ID.";bpoll()};
+$("bsend").onclick=bsend;$("bin").onkeydown=function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();bsend()}};
+setInterval(bpoll,4000);
+
+/* GPA and exams */
+function pr(){var ul=$("gpl");ul.innerHTML="";var pts=0,cr=0;S.gpa.forEach(function(g,i){pts+=g.p*g.c;cr+=g.c;var li=mk("li");li.appendChild(mk("span","t",g.n));li.appendChild(mk("span","tag",g.l+" · "+g.c+" cr"));var d=mk("button","","Delete");d.onclick=function(){S.gpa.splice(i,1);save();pr()};li.appendChild(d);ul.appendChild(li)});$("gpa").textContent=cr?"GPA: "+(pts/cr).toFixed(2):"GPA: add a class"}
+$("gadd").onclick=function(){var o=$("gg").selectedOptions[0],c=parseFloat($("gc").value);if(isNaN(c)||c<=0)return;S.gpa.push({n:$("gcn").value.trim()||"Class",l:o.textContent,p:+o.value,c:c});$("gcn").value="";save();pr()};
+function erender(){var ul=$("el");ul.innerHTML="";S.exams.forEach(function(x,i){var n=Math.round((new Date(x.d)-new Date(today))/864e5),li=mk("li");li.appendChild(mk("span","t",x.n));li.appendChild(mk("span","tag"+(n<=3&&n>=0?" late":""),n<0?"Passed":n===0?"Today":n+" days"));var d=mk("button","","Delete");d.onclick=function(){S.exams.splice(i,1);save();erender()};li.appendChild(d);ul.appendChild(li)})}
+$("eadd").onclick=function(){var n=$("en").value.trim(),d=$("ed").value;if(!n||!d)return;S.exams.push({n:n,d:d});S.exams.sort(function(a,b){return a.d>b.d?1:-1});$("en").value="";save();erender()};
+
+/* notes */
+function wc(){var w=S.notes.trim()?S.notes.trim().split(/\s+/).length:0;$("wc").textContent=w+" words · saved automatically"}
+$("notes").value=S.notes;$("notes").oninput=function(){S.notes=this.value;save();wc()};
+
+/* week plan */
+var dow=(new Date().getDay()+6)%7;
+D.forEach(function(d,i){var w=mk("div",i===dow?"today":"");w.style.marginBottom="10px";w.appendChild(mk("b","",d+(i===dow?" (today)":"")));var ta=mk("textarea");ta.style.minHeight="60px";ta.value=S.sched[d]||"";ta.setAttribute("aria-label",d+" plan");ta.placeholder="Classes, clubs, deadlines";ta.oninput=function(){S.sched[d]=ta.value;save()};w.appendChild(ta);$("days").appendChild(w)});
+
+/* backup */
+function exportBk(){$("bk").value=JSON.stringify(S,function(k,v){return (k==="ai"||k==="look"||k==="bale")?undefined:v})}
+$("ex").onclick=exportBk;
+$("im").onclick=function(){try{var o=JSON.parse($("bk").value);if(typeof o!=="object"||!o)throw 0;for(var k in o)S[k]=o[k];save();$("bm").textContent="Restored. Reloading the tabs…";location.reload()}catch(e){$("bm").textContent="That text isn’t a valid backup."}};
+
+trender();grender();crender();wc();tp();pr();erender();rchat();look();brender();
+var h=(location.hash||"").slice(1);show(T.some(function(t){return t[0]===h})?h:"ai");
+})();
+</script>
+</body>
+</html>
