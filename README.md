@@ -2,7 +2,7 @@
 
 A study space that runs entirely in your browser. It has an AI tutor, a focus timer, tasks, grades, flashcards, and a group chat with friends through Telegram or Bale.
 
-**Live site:** `https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/`
+**Live site:** `https://github.com/arminhash93-web/After-hours-school-project/`
 
 ## Pick your version
 
